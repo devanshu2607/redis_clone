@@ -133,13 +133,15 @@ src/main/java/com/cacheserver/ConC
    +- server
       +- TcpCacheServer.java
       +- ClientHandler.java
+
+```
 Note:
 
 protocal should ideally be renamed to protocol later.
 old Spring REST code can be ignored if TCP-only mode is the final path.
 Supported Commands
 ConC currently supports these commands:
-
+```text
 PING
 PING
 Response:
@@ -199,7 +201,7 @@ TTL existing-key without TTL -> -1
 TTL missing-key -> -2
 Cache Entry Design
 Each cached value is stored as a CacheEntry.
-
+```
 It contains:
 
 value
@@ -264,8 +266,11 @@ value string bytes
 a fixed entry overhead estimate
 Run Locally
 1. Build project
+```text
 ./mvnw clean package
+```
 2. Run the server JAR
+```
 java -jar target/ConC-0.0.1-SNAPSHOT.jar
 Expected output:
 
@@ -283,12 +288,14 @@ docker run -p 6379:6379 conc-cache
 If host port 6379 is already busy:
 
 docker run -p 6380:6379 conc-cache
+```
 In that case the container still listens on 6379, but your machine will expose it through 6380.
 
 Java Client Usage
 ConC includes a Java client package for backend integration.
 
 Basic string usage
+```
 CacheClientConfig config = new CacheClientConfig("localhost", 6379, 60);
 
 try (TcpCacheClient client = new TcpCacheClient(config)) {
@@ -312,6 +319,7 @@ User user = client.getOrLoad(
     () -> userRepository.findById(1L).orElseThrow(),
     120
 );
+```
 This is useful because:
 
 database logic stays inside the user's backend
@@ -321,7 +329,7 @@ This makes the package reusable across different backend projects.
 
 Example Integration Flow
 A backend app can use ConC like this:
-
+```
 Incoming request
    |
    v
@@ -337,12 +345,12 @@ Try cache using TcpCacheClient
             v
         return response
 This matches the cache-aside pattern.
-
+```
 Current Config
 Current config is set programmatically through CacheConfig inside Main.java.
 
 Example values include:
-
+```
 port: 6379
 cleaner interval: 1 second
 max keys: configured in code
@@ -414,6 +422,7 @@ LRU eviction
 memory-pressure handling
 Docker packaging
 reusable backend infrastructure design
+```
 Why This Project Is Useful
 ConC is useful as:
 
