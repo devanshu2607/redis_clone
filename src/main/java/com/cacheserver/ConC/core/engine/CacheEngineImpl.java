@@ -238,4 +238,25 @@ public class CacheEngineImpl implements CacheEngine {
 
         return String.valueOf(ttlSeconds);
     }
+
+    @Override
+    public void evictExpired(String key, long expiryTime) {
+        writeLock.lock();
+        try {
+            Optional<CacheEntry> entryOptional = cacheStore.get(key);
+            if (entryOptional.isPresent()) {
+                CacheEntry entry = entryOptional.get();
+                if (entry.hasTTL() && entry.getExpiryTime() == expiryTime) {
+                    if (entry.isExpired(System.currentTimeMillis())) {
+                        CacheEntry removed = cacheStore.delete(key);
+                        if (removed != null) {
+                            currentMemoryBytes.addAndGet(-removed.getEstimatedSizeBytes());
+                        }
+                    }
+                }
+            }
+        } finally {
+            writeLock.unlock();
+        }
+    }
 }

@@ -1,0 +1,8 @@
+{
+  "name": "cache-conc-client",
+  "version": "1.0.1",
+  "description": "Node client for ConC local cache server",
+  "main": "index.js",
+  "type": "commonjs",
+  "license": "UNLICENSED"
+}

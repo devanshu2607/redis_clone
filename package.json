@@ -1,0 +1,20 @@
+{
+  "name": "cache-conc",
+  "version": "1.0.1",
+  "description": "CLI wrapper for ConC local cache server",
+  "main": "index.js",
+  "bin": {
+    "cache-conc": "./bin/cli.js"
+  },
+  "scripts": {
+    "build": "node scripts/build.js",
+    "start": "node bin/cli.js"
+  },
+  "files": [
+    "bin/cli.js",
+    "bin/ConC.jar",
+    "README.md"
+  ],
+  "author": "Devanshu",
+  "license": "MIT"
+}

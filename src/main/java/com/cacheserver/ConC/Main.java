@@ -36,7 +36,7 @@ public class Main {
 
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
         scheduler.scheduleAtFixedRate(
-                new ExpiryCleaner(cacheStore, expiryManager),
+                new ExpiryCleaner(cacheEngine, expiryManager),
                 1,
                 cacheConfig.getCleanerIntervalSeconds(),
                 TimeUnit.SECONDS

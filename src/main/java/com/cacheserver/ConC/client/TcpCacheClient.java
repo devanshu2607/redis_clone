@@ -17,6 +17,9 @@ public class TcpCacheClient implements CacheClient, Closeable {
 
     private final CacheClientConfig config;
     private final ObjectMapper objectMapper;
+    private Socket socket;
+    private BufferedReader reader;
+    private BufferedWriter writer;
 
     public TcpCacheClient(CacheClientConfig config) {
         this.config = config;
@@ -119,30 +122,56 @@ public class TcpCacheClient implements CacheClient, Closeable {
         return loaded;
     }
 
-    private String sendCommand(String command) {
-        try (
-                Socket socket = new Socket(config.getHost(), config.getPort());
-                BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()))
-        ) {
-            reader.readLine();
+    private synchronized void ensureConnected() throws IOException {
+        if (socket == null || socket.isClosed() || !socket.isConnected()) {
+            socket = new Socket(config.getHost(), config.getPort());
+            reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+            reader.readLine(); // read CONNECTED line
+        }
+    }
 
+    private synchronized String sendCommand(String command) {
+        try {
+            ensureConnected();
             writer.write(command);
             writer.newLine();
             writer.flush();
 
             String response = reader.readLine();
             if (response == null) {
-                throw new CacheClientException("No response from cache server");
+                // Connection closed by server. Let's close and try to reconnect once.
+                closeQuietly();
+                ensureConnected();
+                writer.write(command);
+                writer.newLine();
+                writer.flush();
+                response = reader.readLine();
+                if (response == null) {
+                    throw new CacheClientException("No response from cache server after reconnect");
+                }
             }
-
             return response;
         } catch (IOException e) {
+            closeQuietly();
             throw new CacheClientException("Cache server communication failed", e);
         }
     }
 
+    private void closeQuietly() {
+        try {
+            if (socket != null) {
+                socket.close();
+            }
+        } catch (IOException ignored) {
+        }
+        socket = null;
+        reader = null;
+        writer = null;
+    }
+
     @Override
-    public void close() {
+    public synchronized void close() {
+        closeQuietly();
     }
 }

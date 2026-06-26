@@ -1,17 +1,14 @@
 package com.cacheserver.ConC.core.expiry;
 
-import java.util.Optional;
-
-import com.cacheserver.ConC.core.model.CacheEntry;
-import com.cacheserver.ConC.core.store.CacheStore;
+import com.cacheserver.ConC.core.engine.CacheEngine;
 
 public class ExpiryCleaner implements Runnable {
 
-    private final CacheStore cacheStore;
+    private final CacheEngine cacheEngine;
     private final ExpiryManager expiryManager;
 
-    public ExpiryCleaner(CacheStore cacheStore, ExpiryManager expiryManager) {
-        this.cacheStore = cacheStore;
+    public ExpiryCleaner(CacheEngine cacheEngine, ExpiryManager expiryManager) {
+        this.cacheEngine = cacheEngine;
         this.expiryManager = expiryManager;
     }
 
@@ -27,25 +24,7 @@ public class ExpiryCleaner implements Runnable {
             }
 
             expiryManager.poll();
-
-            Optional<CacheEntry> entryOptional = cacheStore.get(node.getKey());
-            if (entryOptional.isEmpty()) {
-                continue;
-            }
-
-            CacheEntry entry = entryOptional.get();
-
-            if (!entry.hasTTL()) {
-                continue;
-            }
-
-            if (entry.getExpiryTime() != node.getExpiryTime()) {
-                continue;
-            }
-
-            if (entry.isExpired(now)) {
-                cacheStore.delete(node.getKey());
-            }
+            cacheEngine.evictExpired(node.getKey(), node.getExpiryTime());
         }
     }
 }
