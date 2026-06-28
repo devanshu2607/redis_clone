@@ -430,4 +430,15 @@ a backend systems learning project
 a Redis-inspired architecture exercise
 a local installable cache server
 a Java client + TCP server system
-a practical infra-style project for portfolio and understanding
+a practical infra-style project for portfolio and understanding 
+
+https://github.com/user-attachments/assets/1624051c-4a73-436d-a31f-c9b3b7e8707f
+
+
+
+
+
+
+
+
+
