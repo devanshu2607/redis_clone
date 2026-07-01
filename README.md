@@ -1,5 +1,7 @@
 # ConC
 
+https://github.com/user-attachments/assets/1624051c-4a73-436d-a31f-c9b3b7e8707f
+
 ConC is a lightweight Redis-inspired local cache server built in Java.
 
 It runs as a standalone TCP server on a user's machine, uses the user's local RAM, supports TTL expiration, LRU eviction, key limits, memory limits, and provides a Java client for backend integration.
@@ -430,4 +432,15 @@ a backend systems learning project
 a Redis-inspired architecture exercise
 a local installable cache server
 a Java client + TCP server system
-a practical infra-style project for portfolio and understanding
+a practical infra-style project for portfolio and understanding 
+
+
+
+
+
+
+
+
+
+
+
