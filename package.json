@@ -4,7 +4,8 @@
   "description": "CLI wrapper for ConC local cache server",
   "main": "index.js",
   "bin": {
-    "cache-conc": "./bin/cli.js"
+    "cache-conc": "./bin/cli.js",
+    "cache-conc-cli": "./bin/cli-client.js"
   },
   "scripts": {
     "build": "node scripts/build.js",
@@ -12,6 +13,7 @@
   },
   "files": [
     "bin/cli.js",
+    "bin/cli-client.js",
     "bin/ConC.jar",
     "README.md"
   ],
