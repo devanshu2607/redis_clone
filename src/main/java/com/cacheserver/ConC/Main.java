@@ -1,48 +1,46 @@
 package com.cacheserver.ConC;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
-import com.cacheserver.ConC.core.config.CacheConfig;
-import com.cacheserver.ConC.core.engine.CacheEngine;
-import com.cacheserver.ConC.core.engine.CacheEngineImpl;
-import com.cacheserver.ConC.core.expiry.ExpiryCleaner;
-import com.cacheserver.ConC.core.expiry.ExpiryManager;
-import com.cacheserver.ConC.core.store.InMemoryCacheStore;
-import com.cacheserver.ConC.tcp.server.TcpCacheServer;
+import java.io.IOException;
+import com.cacheserver.ConC.network.SocketServer;
+import com.cacheserver.ConC.parser.PlainTextParser;
+import com.cacheserver.ConC.persistence.AOFLoader;
+import com.cacheserver.ConC.persistence.PersistenceManager;
+import com.cacheserver.ConC.router.RequestRouter;
+import com.cacheserver.ConC.worker.WorkerPool;
 
 public class Main {
+    private static final int PORT = 6379;
+    private static final int THREAD_COUNT = 3;
+    private static final String AOF_PATH = "cache.aof";
 
-    public static void main(String[] args) throws Exception {
-        CacheConfig cacheConfig = new CacheConfig(
-                6379,
-                1000,
-                1,
-                220
-        );
+    public static void main(String[] args) {
+        System.out.println("Initializing ConC v2 Sharded Cache Server...");
 
-        InMemoryCacheStore cacheStore = new InMemoryCacheStore();
-        ExpiryManager expiryManager = new ExpiryManager();
+        PersistenceManager persistenceManager = new PersistenceManager(AOF_PATH);
+        RequestRouter router = new RequestRouter(THREAD_COUNT);
+        WorkerPool workerPool = new WorkerPool(THREAD_COUNT, persistenceManager);
 
-        CacheEngine cacheEngine = new CacheEngineImpl(
-                cacheStore,
-                cacheStore,
-                expiryManager,
-                cacheConfig
-        );
+        persistenceManager.start();
+        workerPool.start();
 
-        TcpCacheServer tcpCacheServer = new TcpCacheServer(cacheConfig.getPort(), cacheEngine);
+        try {
+            AOFLoader loader = new AOFLoader(AOF_PATH);
+            loader.load(router, workerPool);
+        } catch (IOException e) {
+            System.err.println("Fatal Error: Failed to restore state from AOF file: " + e.getMessage());
+            System.exit(1);
+        }
 
-        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-        scheduler.scheduleAtFixedRate(
-                new ExpiryCleaner(cacheEngine, expiryManager),
-                1,
-                cacheConfig.getCleanerIntervalSeconds(),
-                TimeUnit.SECONDS
-        );
+        PlainTextParser parser = new PlainTextParser();
+        SocketServer socketServer = new SocketServer(PORT, parser, router, workerPool);
+        socketServer.start();
 
-        System.out.println("TCP cache server started on port " + cacheConfig.getPort());
-        tcpCacheServer.start();
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            System.out.println("\nShutdown signal received. Terminating ConC...");
+            socketServer.shutdown();
+            workerPool.shutdown();
+            persistenceManager.shutdown();
+            System.out.println("ConC server terminated gracefully.");
+        }, "ConC-Shutdown-Hook"));
     }
 }

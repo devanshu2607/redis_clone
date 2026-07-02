@@ -127,7 +127,7 @@ public class TcpCacheClient implements CacheClient, Closeable {
             socket = new Socket(config.getHost(), config.getPort());
             reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-            reader.readLine(); // read CONNECTED line
+            reader.readLine(); 
         }
     }
 
@@ -140,7 +140,7 @@ public class TcpCacheClient implements CacheClient, Closeable {
 
             String response = reader.readLine();
             if (response == null) {
-                // Connection closed by server. Let's close and try to reconnect once.
+                
                 closeQuietly();
                 ensureConnected();
                 writer.write(command);
