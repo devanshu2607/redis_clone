@@ -67,9 +67,14 @@ public class Worker extends Thread {
         }
     }
 
+
     private void processTask(WorkerTask task) {
+       
         Command command = task.getCommand();
         SocketChannel channel = task.getChannel();
+         System.out.println(
+        "[DEBUG] TYPE = " + command.getType() + "ARGS = " + java.util.Arrays.toString(command.getArgs())
+    );
 
         String response;
         try {

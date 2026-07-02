@@ -1,0 +1,2 @@
+SET session abc
+EXPIRE session 10

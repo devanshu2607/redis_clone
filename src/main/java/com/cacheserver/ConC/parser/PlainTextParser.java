@@ -30,6 +30,8 @@ public class PlainTextParser {
             System.arraycopy(parts, 1, args, 0, parts.length - 1);
         }
 
+        System.out.println("PARSER " + commandName + " -> " + type);
+
         return new Command(type, args);
     }
 }
